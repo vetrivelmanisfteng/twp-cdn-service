@@ -1,0 +1,31 @@
+name: $PROJ-$ENV-$ENV_UNIT
+services:
+  cdn:
+    image: $PROJ-$APP:$VERSION-$ENV
+    entrypoint: "/usr/local/bin/supervisord"
+    command: ["-c", "/etc/supervisord.conf"]
+    configs:
+      - source: cdn-supervisord-conf
+        target: /etc/supervisord.conf
+      - source: cdn-nginx-conf
+        target: /etc/nginx/nginx.conf
+    volumes:
+      - cdn-log:/opt/nginx/log
+    networks:
+      cdn-subnet:
+        ipv4_address: ${CDN_NODE_01_IP}
+configs:
+  cdn-supervisord-conf:
+    file: ./config/supervisord.conf
+  cdn-nginx-conf:
+    file: ./config/nginx.conf
+volumes:
+  cdn-log:
+    driver: local
+networks:
+  cdn-subnet:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${CDN_SUBNET_IP_RANGES}
